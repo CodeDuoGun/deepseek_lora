@@ -169,3 +169,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+deepseek-llm-7b-chat/*
+model/*
+output/*
+swanlog/*
+

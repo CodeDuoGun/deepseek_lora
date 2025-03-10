@@ -1,0 +1,10 @@
+transformers
+datasets
+accelerate
+peft
+gradio
+pandas
+tokenizers
+openmind
+swanlab
+loguru
