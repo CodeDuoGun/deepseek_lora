@@ -342,10 +342,7 @@ def main():
     train_ds = Dataset.from_pandas(data)
 
     # 最长长度
-    if tokenizer.model_max_length:
-        max_seq_length = tokenizer.model_max_length
-    else:
-        max_seq_length = args.max_seq_length
+    max_seq_length = tokenizer.model_max_length or args.max_seq_length
 
     train_dataset = train_ds.map(process_data,
                                  fn_kwargs={"tokenizer": tokenizer, "max_seq_length": max_seq_length},

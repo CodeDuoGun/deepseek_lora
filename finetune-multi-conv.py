@@ -8,19 +8,34 @@ deepseek微调思路整理(自己的代码)
 6、设置训练器参数+训练
 7、保存模型
 """
-
+import numpy as np
+with_metric = False
+if with_metric:  
+    import evaluate
+    metric = evaluate.load("accuracy.py")
 ### 1、加载模型+分词器
-from transformers import AutoTokenizer,AutoModelForCausalLM,DataCollatorForSeq2Seq
+from transformers import AutoTokenizer,AutoModelForCausalLM,DataCollatorForSeq2Seq, BitsAndBytesConfig
 import torch
 
 # 加载模型
 model_path = "deepseek-ai/deepseek-llm-7b-chat"
+###int4量化配置
+quantization_config = BitsAndBytesConfig(
+    load_in_4bit=True,  # 或者 load_in_8bit=True，根据需要设置
+    #llm_int8_threshold=6.0,
+    #llm_int8_has_fp16_weight=False,
+    bnb_4bit_compute_dtype=torch.float16,
+    # bnb_4bit_quant_type="nf4",#添加nf4配置，去掉为fp4
+    # bnb_4bit_use_double_quant=True,#添加nf4配置，去掉为fp4
+)
 model_kwargs = {
         "torch_dtype": torch.float16,
-        "use_cache": True, 
+        # "use_cache": True,
         "trust_remote_code": True,
-        # "device_map":"auto"
+        "device_map":"cuda:0" if torch.cuda.is_available() else "cpu",
+        "quantization_config": None,
     }
+
 model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
 
 # 加载分词器
@@ -33,7 +48,7 @@ print("分词器：",tokenizer)
 import pandas as pd
 from datasets import Dataset
 
-data_path = "./data/medical_multi_data.json"
+data_path = "./data/medical_multi_data_test.json"
 data = pd.read_json(data_path)
 train_ds = Dataset.from_pandas(data)
 print("train_ds", train_ds)
@@ -43,7 +58,6 @@ def process_data(data, tokenizer, max_seq_length):
 
     conversations = data["conversation"]
     for i,conv in enumerate(conversations):
-
         if "instruction" in conv:
             instruction_text = conv['instruction']
         else:
@@ -89,6 +103,8 @@ train_dataset = train_ds.map(process_data,
                              fn_kwargs={"tokenizer": tokenizer, "max_seq_length": tokenizer.model_max_length},
                              remove_columns=train_ds.column_names)
 
+print(train_dataset.column_names)
+
 # 数据整理
 data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, padding=True, return_tensors="pt")
 
@@ -113,7 +129,7 @@ output_dir="./output/deepseek-mutil-test"
 # 配置训练参数
 train_args = TrainingArguments(
     output_dir=output_dir,
-    per_device_train_batch_size=2,
+    per_device_train_batch_size=4,
     gradient_accumulation_steps=8,
     logging_steps=1,
     num_train_epochs=3,
@@ -157,19 +173,36 @@ model.enable_input_require_grads()
 model = get_peft_model(model,lora_config)
 model.print_trainable_parameters()
 
+# 设置评估方法
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
+
 # 配置训练器
 trainer = Trainer(
         model=model,
         args=train_args,
         train_dataset=train_dataset,
         data_collator=data_collator,
+        device="cuda" if torch.cuda.is_available() else "cpu",
         callbacks=[swanlab_callback],
+        compute_metrics= compute_metrics if with_metric else None
         )
 # 启动训练
 trainer.train()
+
+# 在测试集验证效果
+
 
 ### 7、保存模型
 from os.path import join
 
 final_save_path = join(output_dir)
 trainer.save_model(final_save_path)
+# release memory
+del model
+del trainer
+
+torch.cuda.empty_cache()
