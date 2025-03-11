@@ -8,7 +8,11 @@ deepseek微调思路整理(自己的代码)
 6、设置训练器参数+训练
 7、保存模型
 """
-
+import numpy as np
+with_metric = False
+if with_metric:  
+    import evaluate
+    metric = evaluate.load("accuracy.py")
 ### 1、加载模型+分词器
 from transformers import AutoTokenizer,AutoModelForCausalLM,DataCollatorForSeq2Seq, BitsAndBytesConfig
 import torch
@@ -169,6 +173,13 @@ model.enable_input_require_grads()
 model = get_peft_model(model,lora_config)
 model.print_trainable_parameters()
 
+# 设置评估方法
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
+
 # 配置训练器
 trainer = Trainer(
         model=model,
@@ -177,6 +188,7 @@ trainer = Trainer(
         data_collator=data_collator,
         device="cuda" if torch.cuda.is_available() else "cpu",
         callbacks=[swanlab_callback],
+        compute_metrics= compute_metrics if with_metric else None
         )
 # 启动训练
 trainer.train()
