@@ -16,7 +16,7 @@ i# Copyright 2020 The HuggingFace Datasets Authors and the current dataset scrip
 import datasets
 from sklearn.metrics import accuracy_score
 
-import evaluate
+import metric_evaluate
 
 
 _DESCRIPTION = """
@@ -77,10 +77,10 @@ _CITATION = """
 """
 
 
-@evaluate.utils.file_utils.add_start_docstrings(_DESCRIPTION, _KWARGS_DESCRIPTION)
-class Accuracy(evaluate.Metric):
+@metric_evaluate.utils.file_utils.add_start_docstrings(_DESCRIPTION, _KWARGS_DESCRIPTION)
+class Accuracy(metric_evaluate.Metric):
     def _info(self):
-        return evaluate.MetricInfo(
+        return metric_evaluate.MetricInfo(
             description=_DESCRIPTION,
             citation=_CITATION,
             inputs_description=_KWARGS_DESCRIPTION,
