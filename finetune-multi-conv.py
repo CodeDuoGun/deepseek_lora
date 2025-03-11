@@ -201,4 +201,8 @@ from os.path import join
 
 final_save_path = join(output_dir)
 trainer.save_model(final_save_path)
+# release memory
+del model
+del trainer
 
+torch.cuda.empty_cache()
