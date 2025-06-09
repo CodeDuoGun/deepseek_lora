@@ -16,3 +16,7 @@ python finetune-multi-conv.py
 ```bash
 python finetune-multi-openmind.py
 ```
+# TODO
+- [x] peft 微调
+- [ ] 强化学习
+- [ ] 视觉模型微调
