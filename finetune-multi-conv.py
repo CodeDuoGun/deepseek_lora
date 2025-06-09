@@ -21,7 +21,7 @@ import torch
 model_path = "deepseek-ai/deepseek-llm-7b-chat"
 ###int4量化配置
 quantization_config = BitsAndBytesConfig(
-    load_in_4bit=True,  # 或者 load_in_8bit=True，根据需要设置
+    load_in_4bit=False,  # 或者 load_in_8bit=True，根据需要设置
     #llm_int8_threshold=6.0,
     #llm_int8_has_fp16_weight=False,
     bnb_4bit_compute_dtype=torch.float16,
