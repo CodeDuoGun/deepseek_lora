@@ -48,7 +48,7 @@ print("分词器：",tokenizer)
 import pandas as pd
 from datasets import Dataset
 
-data_path = "./data/medical_multi_data_test.json"
+data_path = "./data/medical_multi_data_pro.json"
 data = pd.read_json(data_path)
 train_ds = Dataset.from_pandas(data)
 print("train_ds", train_ds)
@@ -149,6 +149,8 @@ train_args = TrainingArguments(
 from swanlab.integration.transformers import SwanLabCallback
 import os
 
+import swanlab
+swanlab.login(api_key="F6n03ZzhpVx69ng6uXJwD", save=True)
 os.environ["SWANLAB_API_HOST"] = "https://swanlab.115.zone/api"
 os.environ["SWANLAB_WEB_HOST"] = "https://swanlab.115.zone"
 swanlab_config = {
@@ -186,8 +188,9 @@ trainer = Trainer(
         args=train_args,
         train_dataset=train_dataset,
         data_collator=data_collator,
-        device="cuda" if torch.cuda.is_available() else "cpu",
+        # device="cuda" if torch.cuda.is_available() else "cpu",
         callbacks=[swanlab_callback],
+        # evaluation_strategy="epoch",
         compute_metrics= compute_metrics if with_metric else None
         )
 # 启动训练
