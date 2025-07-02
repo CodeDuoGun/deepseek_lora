@@ -9,3 +9,5 @@ openmind
 swanlab
 loguru
 bitsandbytes
+python-dotenv
+openai

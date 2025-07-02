@@ -1,0 +1,86 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "chief_complaint": {
+        "type": "string",
+        "description": "患者的主诉症状，主要症状，描述为'时间+症状'。而不是就诊目的"
+      },
+      "current_medical_history": {
+        "type": "string",
+        "description": "患者的现病史详细描述，包括 起病时间与方式（如“无明显诱因发热2日”）、症状演变过程（如“逐渐加重”、“反复发作”、“有缓解后再次出现”等）、伴随症状（与主诉相关的其他症状，如“伴发热、头痛、咽痛”）、既往用药情况、治疗反应或变化（疾病对生活的影响或患者感受，如“影响睡眠”“不能进食”等）、检查中异常结果（“血常规：WBC 12.3↑；CRP 43mg/L；CT：右肺下叶斑片影”等）"
+      },
+      "past_medical_history": {
+        "type": "string",
+        "description": "患者以前患过的重要疾病，如高血压、糖尿病、胃溃疡等 或'无既往史'"
+      },
+      "allergy_history": {
+        "type": "string",
+        "description": "对药物、食物、花粉等是否过敏，如“青霉素过敏”或“无药物、食物过敏史“ "
+      },
+      "family_history": {
+        "type": "string",
+        "description": "直系亲属重大疾病情况，如“母亲有乳腺癌，父亲有高血压”,或 “无家族遗传病史”"
+      },
+      "personal_history": {
+        "type": "string",
+        "description": "包括吸烟、饮酒、职业、生育、疫苗接种等与健康相关的生活背景，或“无个人史”"
+      },
+      "surgical_and_trauma_history": {
+        "type": "string",
+        "description": "曾做过的手术或重大外伤记录，如“5年前行阑尾切除术”, 或 “无手术及外伤史”"
+      },
+      "tongue_and_facial_diagnosis": {
+        "type": "string",
+        "description": "患者的舌诊和面诊结果, 若没有输出 '无中医四诊'"
+      },
+      "abnormal_examination_results": {
+        "type": "string",
+        "description": "患者辅助检查/检查结果异常指标，如“血常规：WBC 12.3↑；CRP 43mg/L；CT：右肺下叶斑片影”"
+      },
+      "provisional_diagnosis": {
+        "type": "object",
+        "properties": {
+          "TCM_diagnosis": {
+            "type": "string",
+            "description": "中医诊断结果"
+          },
+          "TCM_syndrome_pattern": {
+            "type": "string",
+            "description": "中医证型"
+          },
+          "western_diagnosis": {
+            "type": "string",
+            "description": "西医诊断结果"
+          },
+          "points_of_syndrome_diff": {
+            "type": "string",
+            "description": "辩证要点"
+          }
+        },
+        "required": ["TCM_diagnosis", "TCM_syndrome_pattern", "western_diagnosis", "points_of_syndrome_diff"]
+      },
+      "treatment": {
+        "type": "string",
+        "description": "治疗方案"
+      },
+      "recommended_medications": {
+        "type": "string",
+        "description": "基于既往史、过敏史、家族史、个人史、手术史，推荐符合的中药和方剂、处方"
+      }
+    },
+    "required": [
+      "chief_complaint",
+      "current_medical_history",
+      "past_medical_history",
+      "allergy_history",
+      "family_history",
+      "personal_history",
+      "surgical_and_trauma_history",
+      "tongue_and_facial_diagnosis",
+      "abnormal_examination_results",
+      "provisional_diagnosis",
+      "treatment",
+      "recommended_medications"
+    ]
+  }
