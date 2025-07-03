@@ -174,3 +174,4 @@ model/*
 output/*
 swanlog/*
 
+logs/*
