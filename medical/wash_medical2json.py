@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor,as_completed
 from tqdm import tqdm
 from dotenv import load_dotenv
 import time
+from typing import List, Dict
 load_dotenv(verbose=True)
 
 # 使用doubao模型 测试下结构化内容提取
@@ -29,29 +30,31 @@ def extract_emr(text):
 3. 严格按照json格式输出
 4. 推荐方药列出常用中药及具体方剂。
 
-示例：
-输入：该患者自述：患者于2020.11.06日因急性化脓性胆囊炎伴胆囊多发结石，来我院住院，予以胆囊CT引导下穿刺引流治疗，并予以抗炎治疗，患者症状缓解，于今日来我院住院要求行胆囊切除手术治疗，为进一步诊治入住我科。病程中，患者精神可，无腹胀腹痛，食纳可，大小便无异常，无恶心呕吐，无嗳气泛酸，无寒战、发热，无黄疸，无呕血、黑便，无腹泻、腹胀，舌质红苔薄白，脉弦。，通过望闻问切判断其病症：神志清晰，精神尚可，形体适中，语言清晰，口唇红润；皮肤正常，无斑疹。头颅大小形态正常，无目窼下陷，白睛无黄染，耳轮正常，无耳瘘及生疮；颈部对称，无青筋暴露，无瘿瘤瘰疬，胸部对称，虚里搏动正常，腹部平坦，无癥瘕痞块，爪甲色泽红润，双下肢无浮肿，舌淡红，苔白，脉弦。【证候】肝郁气滞证\n【病因】肝郁气滞是指由于肝的疏泄功能异常，疏泄不及而致气机郁滞所表现的证候。\n【中医诊断】胁痛病\n【治宜】疏肝解郁、疏肝理气\n【推荐】常见中药有贯叶金丝桃、香附、月季花等；方用乳康颗粒、朴沉化郁丸、肝郁调经膏等。
+示例1：
+
+输入：患者2月前无明显诱因出现头晕、行走不稳。头晕呈头昏沉感，持续无缓解，无头痛，无恶心呕吐，无视物旋转。肢体乏力，行走不稳。2天前上述情况加重，外院行头颅CT示：1.多发腔隙性脑梗塞，部分软化灶。2.轻度脑萎缩。上述症状持续存在无好转，为求中西医结合诊治，今来我院就诊，门诊拟“脑梗死”收住入院。入院时：患者神志模糊，精神萎靡，头晕头昏，言语稍欠利，双下肢行走不稳，纳食差，自主进食困难，夜寐一般，小便失禁，大便一般。 神志模糊，精神差，形体适中，语言含糊，口唇苍白；皮肤正常，无斑疹。头颅大小形态正常，无目窼下陷，白睛无黄染，耳轮正常，无耳瘘及生疮；颈部对称，无青筋暴露，无瘿瘤瘰疬，胸部对称，虚里搏动正常，腹部平坦，无癥瘕痞块，爪甲色泽红润，双下肢无浮肿，舌淡红，苔白，脉细。, 辩证方法以及治疗方法？【证候】气虚血瘀证\n【病因】是指机体脏腑功能衰退，元气不足，无力推动血液运行，致血流不畅而成瘀所产生的一系列临床表现的证候，多因久病体虚，劳累过度，年老体衰所致。\n【中医诊断】中风病\n【治宜】化瘀通络、益气活血\n【推荐】常见中药有红景天、两面针、银杏叶等；方用脑心通丸、复方地龙胶囊、脑心通片等。
 输出：
 {
-"chief_complaint": "2020.11.06起急性化脓性胆囊炎伴胆囊多发结石",
-"current_medical_history": "患者于2020.11.06因急性化脓性胆囊炎伴胆囊多发结石入院，行胆囊CT引导下穿刺引流及抗炎治疗后症状缓解。今日为进一步诊治要求行胆囊切除术再次住院。期间精神可，无腹胀腹痛，食纳可，大小便正常，无恶心呕吐、嗳气泛酸、寒战发热、黄疸、呕血黑便、腹泻腹胀等症。",
-"past_medical_history": "未提及既往疾病史",
-"allergy_history": "未提及药物、食物或其他过敏情况",
-"family_history": "未提及家族疾病史",
-"personal_history": "未提及吸烟、饮酒、职业等个人习惯或疫苗接种信息",
-"surgical_and_trauma_history": "曾行胆囊穿刺引流术",
-"tongue_and_facial_diagnosis": "神志清晰，精神尚可，形体适中，语言清晰，口唇红润；皮肤正常，无斑疹。头颅形态正常，白睛无黄染；耳轮正常，无生疮；颈部对称，无青筋暴露、瘿瘤；胸部对称，虚里搏动正常；腹部平坦，无痞块；爪甲红润，双下肢无浮肿；舌质淡红，苔白，脉弦。",
-"abnormal_examination_results": "舌淡红，苔白，脉弦；胆囊多发结石影像",
-"provisional_diagnosis": {
-    "TCM_diagnosis": "胁痛病",
-    "TCM_syndrome_pattern": "肝郁气滞证",
-    "western_diagnosis": "急性化脓性胆囊炎伴胆囊多发结石",
-    "points_of_syndrome_diff": "肝的疏泄功能异常，气机郁滞，舌淡红，苔白，脉弦"
-},
-"treatment": "疏肝解郁、疏肝理气治疗。拟行胆囊切除术。",
-"recommended_medications": "中药：贯叶金丝桃、香附、月季花；方剂：乳康颗粒、朴沉化郁丸、肝郁调经膏"
+  "chief_complaint": "2天前头晕、行走不稳加重",
+  "current_medical_history": "患者2月前无明显诱因出现头晕、行走不稳，头晕为头昏沉感，持续无缓解，无头痛、无恶心呕吐、无视物旋转，伴肢体乏力。2天前上述症状加重，外院头颅CT示：1.多发腔隙性脑梗塞，部分软化灶；2.轻度脑萎缩。症状持续存在，为求中西医结合治疗来我院门诊，门诊拟“脑梗死”收住入院。入院时患者神志模糊，精神萎靡，头晕头昏，言语稍欠利，双下肢行走不稳，纳食差，自主进食困难，夜寐一般，小便失禁，大便一般。",
+  "past_medical_history": "未提及既往疾病史",
+  "allergy_history": "未提及药物、食物或其他过敏情况",
+  "family_history": "未提及家族疾病史",
+  "personal_history": "未提及吸烟、饮酒、职业、生育等个人史",
+  "surgical_and_trauma_history": "未提及手术及外伤史",
+  "marital_and_child_history": "未婚未育",
+  "special_periods": "无特殊时期",
+  "tongue_and_facial_diagnosis": "神志模糊，精神差，形体适中，语言含糊，口唇苍白；皮肤正常，无斑疹。头颅大小形态正常，无目窼下陷，白睛无黄染，耳轮正常，无耳瘘及生疮；颈部对称，无青筋暴露，无瘿瘤瘰疬，胸部对称，虚里搏动正常，腹部平坦，无癥瘕痞块，爪甲色泽红润，双下肢无浮肿，舌淡红，苔白，脉细。",
+  "abnormal_examination_results": "头颅CT：多发腔隙性脑梗塞，部分软化灶；轻度脑萎缩",
+  "provisional_diagnosis": {
+    "TCM_diagnosis": "中风病",
+    "TCM_syndrome_pattern": "气虚血瘀证",
+    "western_diagnosis": "脑梗死，伴脑萎缩及多发腔隙性梗塞",
+    "points_of_syndrome_diff": "患者年老体虚，头晕行走不稳，神志模糊，舌淡红、苔白、脉细，提示气虚为本；既往有脑梗及脑萎缩影像学表现，提示血瘀阻络，故辩证为气虚血瘀证"
+  },
+  "treatment": "益气活血、化瘀通络治疗",
+  "recommended_medications": "中药：红景天、两面针、银杏叶；方剂：脑心通丸、复方地龙胶囊、脑心通片"
 }
-
     """
     
         stream_res =client.chat.completions.create(
@@ -73,17 +76,22 @@ def extract_emr(text):
         logger.error(f"error to deal {text} for {traceback.format_exc()}")
     return {}
 
-def extract_batch_emr(data:list):
+def extract_batch_emr(data:List[Dict]):
     res = []
-    with ThreadPoolExecutor(5) as executor:
-        future_to_url = {executor.submit(extract_emr, text):text for text in data}
+    instruction_text = "根据病史、症状、检查报告结果等医案信息，提取标准结构化病历信息，包括主诉、现病史、既往史、过敏史、家族史、婚育史、特殊时期、舌诊面诊结果、检查结果、初步诊断、治法与用药建议等内容，并以 JSON 格式输出。"
+    if len(data) !=10:
+        logger.warning(f"batch emr data size {len(data)}")
+    logger.info(f"ready to extract emr {[case.keys()for case in data]}")
+    with ThreadPoolExecutor(10) as executor:
+        future_to_url = {executor.submit(extract_emr, text):ori_input for case in data for ori_input, text in case.items()}
         for future in as_completed(future_to_url):
-            text = future_to_url[future]
+            ori_text = future_to_url[future]
             try:
                 data = future.result()
-                res.append(data)
+                res.append({"instruction": instruction_text, "input":ori_text, "output": data})
             except Exception as exc:
-                print('%r generated an exception: %s' % (text, exc))
+                logger.error('%r generated an exception: %s' % (ori_text, exc))
+                res.append({})
     return res
 
 def prepare_train_data(data_path="medical/data/medical_case.json"):
@@ -98,16 +106,18 @@ def prepare_train_data(data_path="medical/data/medical_case.json"):
     for item in tqdm(train_data, total=len(train_data)):
         text = f"患者描述: {item['input']},医生诊断：{item['output']}"
         if not batch_data or len(batch_data)%batch_size!=0:
-            batch_data.append(text)
+            batch_data.append({item["input"]:text})
         else:
             extracted_res = extract_batch_emr(batch_data)
             result.extend(extracted_res)
             batch_data = []
+            count+=10
             time.sleep(1)
-        count+=1
-        if count!=0 and count % 1000==0: 
+        if count!=0 and count % 100==0: 
             file_path = f"medical/train_data/medical_sft_train_{count}.json"
             save_train_data(result, file_path)
+        if count == 100:
+            break
         if count == 25000:
             break 
 
