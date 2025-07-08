@@ -4,11 +4,11 @@ from peft import PeftModel
 
 
 def merge_model():
-    base_model_name = "Qwen/Qwen3-8B"  # 原始模型名
+    base_model_name = "Qwen3-8B"  # 原始模型名
     lora_path = "medical/output/qwen3_lora"  # LoRA adapter 输出路径
 
     # 1. 加载基础模型
-    model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", local_files_only=True)
 
     # 2. 加载 LoRA 权重
     model = PeftModel.from_pretrained(model, lora_path)

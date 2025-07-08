@@ -19,7 +19,7 @@ import torch
 
 # 加载模型
 # model_path = "deepseek-ai/deepseek-llm-7b-chat"
-model_path = "Qwen/Qwen3-8B"
+model_path = "Qwen3-8B"
 ###int4量化配置
 quantization_config = BitsAndBytesConfig(
     load_in_4bit=False,  # 或者 load_in_8bit=True，根据需要设置
@@ -37,10 +37,10 @@ model_kwargs = {
         "quantization_config": None,
     }
 
-model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
+model = AutoModelForCausalLM.from_pretrained(model_path,  local_files_only=True, **model_kwargs)
 
 # 加载分词器
-tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True, use_fast=False)
 
 print("模型：",model)
 print("分词器：",tokenizer)
@@ -121,6 +121,7 @@ lora_config = LoraConfig(
         lora_dropout=0.05,
         bias="none",
         target_modules=['up_proj', 'gate_proj', 'q_proj', 'o_proj', 'down_proj', 'v_proj', 'k_proj'],
+        # target_modules=['W_pack'],
         task_type=TaskType.CAUSAL_LM,
         inference_mode=False  # 训练模式
     )
@@ -162,8 +163,8 @@ swanlab_config = {
         "peft":"lora"
     }
 swanlab_callback = SwanLabCallback(
-    project="deepseek-finetune-test",
-    experiment_name="first-test",
+    project="qwen3-finetune-test",
+    experiment_name="lora_wpack-test",
     description="微调多轮对话",
     workspace=None,
     config=swanlab_config,
