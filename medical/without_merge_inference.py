@@ -5,18 +5,19 @@ import time
 
 # 模型和 LoRA 路径
 t0 = time.time()
-base_model_name = "Qwen/Qwen3-8B"  # or local path
+base_model_name = "Qwen3-8B"  # or local path
 lora_weights = "medical/output/qwen3_lora"  # your LoRA output dir
 
 # 加载 tokenizer
-tokenizer = AutoTokenizer.from_pretrained(base_model_name, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(base_model_name, local_files_only=True) #trust_remote_code=True)
 
 # 加载 base 模型
 base_model = AutoModelForCausalLM.from_pretrained(
     base_model_name,
     torch_dtype=torch.float16,
     device_map="auto",
-    trust_remote_code=True
+    local_files_only=True
+    # trust_remote_code=True
 )
 
 # 加载 LoRA 权重（未 merge 模式）

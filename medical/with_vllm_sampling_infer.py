@@ -1,18 +1,27 @@
+from vllm import LLM, SamplingParams
+from transformers import AutoTokenizer
 import time
 
-import openai
-"""
-python3 -m vllm.entrypoints.openai.api_server \
-  --model medical/output/qwen3_lora_merged \
-  --tokenizer Qwen/Qwen3-8B \
-  --dtype float16
+# 模型路径：合并后的模型目录
+merged_model_path = "medical/output/qwen3_lora_merged"
 
-"""
-# 设置本地 vllm 服务地址
-openai.api_base = "http://localhost:8000/v1"
-openai.api_key = "EMPTY"  # vllm 不校验 key
+# 加载 tokenizer（Qwen3 要加 trust_remote_code=True）
+tokenizer = AutoTokenizer.from_pretrained(
+    merged_model_path,
+    trust_remote_code=True,
+    local_files_only=True
+)
 
-# 构造 Chat 结构输入
+# 初始化 vLLM LLM 实例
+llm = LLM(
+    model=merged_model_path,
+    tokenizer=tokenizer,
+    dtype="float16",   # Qwen3 支持 float16
+    trust_remote_code=True,
+    max_model_len=4096
+)
+
+# 构造 prompt（手动拼接，无“思考模式”）
 content = "患者女69岁，2023年8月份查出乳腺4c,有溢液，溢液当时黑褐色，现在发淡红色，未做手术，用中药调理的，2023年7月份查出血小板低大约90.现在血小板数值49，有牙龈出血的情况，身体虚弱无力，身体过敏湿疹四个月了，乳腺4c,溢液，血小板低，牙龈出血，湿疹，已婚已育一儿一女均已婚"
 prompt = """根据病史、症状、检查报告结果等医案信息，提取标准结构化病历信息，包括主诉、现病史、既往史、过敏史、家族史、婚育史、特殊时期、舌诊面诊结果、检查结果、初步诊断、治法与用药建议等内容，并以 JSON 格式输出。
 示例：
@@ -40,19 +49,23 @@ prompt = """根据病史、症状、检查报告结果等医案信息，提取�
   "recommended_medications": "中药：红景天、两面针、银杏叶；方剂：脑心通丸、复方地龙胶囊、脑心通片"
 }
 """
-messages = [
-    {"role": "user", "content": prompt + f"医案信息:{content}"}
-]
-start = time.perf_counter()
-# 发送请求
-response = openai.ChatCompletion.create(
-    model="qwen3-8b-lora",  # 任意名称即可，对应你加载的模型
-    messages=messages,
+
+# 拼接成 Qwen3 格式的 prompt（你也可以查 tokenizer.chat_template 实现来模拟）
+prompt = f"<|im_start|>user\n{prompt}{content}<|im_end|>\n<|im_start|>assistant\n"
+
+# 配置 sampling 参数（关闭采样、设定长度）
+sampling_params = SamplingParams(
     temperature=0.7,
-    max_tokens=1024
+    max_tokens=1024,
+    top_p=1.0,
+    stop=["<|im_end|>"]
 )
 
-# 获取结果
-reply = response['choices'][0]['message']['content']
-print("模型输出：\n", reply)
-print(f"cost: {time.perf_counter() - start}")
+# 执行推理
+t0 = time.time()
+outputs = llm.generate(prompt, sampling_params)
+print(f"推理耗时: {time.time() - t0:.2f}s")
+
+# 输出结果
+response = outputs[0].outputs[0].text.strip()
+print("模型输出：\n", response)
