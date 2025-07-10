@@ -102,7 +102,7 @@ def load_alpaca_dataset(file_path):
     return Dataset.from_list(data)
 
     
-dataset = load_alpaca_dataset("medical/train_data/medical_sft_train_final.json")
+dataset = load_alpaca_dataset("medical/sft_data/medical_sft_train_final.json")
 train_dataset = dataset.map(process_data,
                              fn_kwargs={"tokenizer": tokenizer, "max_seq_length": tokenizer.model_max_length},
                              remove_columns=dataset.column_names)
@@ -163,8 +163,8 @@ swanlab_config = {
         "peft":"lora"
     }
 swanlab_callback = SwanLabCallback(
-    project="qwen3-finetune-test",
-    experiment_name="lora_wpack-test",
+    project="qwen3-finetune",
+    experiment_name="lora_sft-tcm",
     description="微调多轮对话",
     workspace=None,
     config=swanlab_config,
