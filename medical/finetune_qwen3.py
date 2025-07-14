@@ -47,10 +47,10 @@ print("分词器：",tokenizer)
 
 ### 2、处理数据集
 import pandas as pd
-from datasets import Dataset
+from datasets import Dataset, DatasetDict
 
 import json
-data_path = "medical/train_data/medical_sft_train_final.json"
+data_path = "medical/sft_data/train_data/medical_sft_train_final.json"
 
 def process_data(data, tokenizer, max_seq_length):
     instruction = "请根据输入的病案自由文本，提取标准结构化诊疗信息，包括主诉、现病史、既往史、过敏史、家族史、四诊摘要、检查结果、诊断、治法与用药建议等内容，并以 JSON 格式输出。"
@@ -99,15 +99,23 @@ def load_alpaca_dataset(file_path):
     print(type(data), len(data), data[0])
     # import pdb
     # pdb.set_trace()
-    return Dataset.from_list(data)
+    return  DatasetDict({
+        "train": Dataset.from_list(data)
+    })
+    # return Dataset.from_list(data)
 
     
-dataset = load_alpaca_dataset("medical/train_data/medical_sft_train_final.json")
-train_dataset = dataset.map(process_data,
+dataset = load_alpaca_dataset(data_path)
+print(dataset.keys())
+tokenized = dataset["train"].map(process_data,
                              fn_kwargs={"tokenizer": tokenizer, "max_seq_length": tokenizer.model_max_length},
-                             remove_columns=dataset.column_names)
+                             remove_columns=dataset["train"].column_names)
 
-print(train_dataset.column_names)
+print(tokenized.column_names)
+split_dataset = tokenized.train_test_split(test_size=0.1, seed=42)
+
+train_dataset = split_dataset["train"]
+eval_dataset = split_dataset["test"]
 
 # 数据整理
 data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, padding=True, return_tensors="pt")
@@ -134,14 +142,17 @@ output_dir="./output/qwen3_lora"
 # 配置训练参数
 train_args = TrainingArguments(
     output_dir=output_dir,
-    per_device_train_batch_size=1,
-    gradient_accumulation_steps=16,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=32,
     logging_steps=1,
     num_train_epochs=3,
     save_steps=5000,
+    eval_steps=5000,
     learning_rate=2e-5,
     save_on_each_node=True,
     gradient_checkpointing=True,
+    # load_best_model_at_end=True,
+    save_total_limit=2,
     report_to=None,
     seed=42,
     optim="adamw_torch",
@@ -163,8 +174,8 @@ swanlab_config = {
         "peft":"lora"
     }
 swanlab_callback = SwanLabCallback(
-    project="qwen3-finetune-test",
-    experiment_name="lora_wpack-test",
+    project="qwen3-finetune",
+    experiment_name="lora_sft-tcm",
     description="微调多轮对话",
     workspace=None,
     config=swanlab_config,
@@ -192,6 +203,7 @@ trainer = Trainer(
         model=model,
         args=train_args,
         train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         data_collator=data_collator,
         # device="cuda" if torch.cuda.is_available() else "cpu",
         callbacks=[swanlab_callback],
