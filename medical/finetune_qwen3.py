@@ -50,7 +50,7 @@ import pandas as pd
 from datasets import Dataset
 
 import json
-data_path = "medical/train_data/medical_sft_train_final.json"
+data_path = "medical/sft_data/train_data/medical_sft_train_final.json"
 
 def process_data(data, tokenizer, max_seq_length):
     instruction = "请根据输入的病案自由文本，提取标准结构化诊疗信息，包括主诉、现病史、既往史、过敏史、家族史、四诊摘要、检查结果、诊断、治法与用药建议等内容，并以 JSON 格式输出。"
@@ -130,7 +130,9 @@ lora_config = LoraConfig(
 from transformers import TrainingArguments
 
 # 输出地址
-output_dir="./output/qwen3_lora"
+from datetime import datetime
+folder_name = datetime.today().strftime('%Y%m%d')
+output_dir=f"./output/qwen3_lora/{folder_name}"
 # 配置训练参数
 train_args = TrainingArguments(
     output_dir=output_dir,
