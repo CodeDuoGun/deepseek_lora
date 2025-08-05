@@ -138,7 +138,9 @@ lora_config = LoraConfig(
 from transformers import TrainingArguments
 
 # 输出地址
-output_dir="./output/qwen3_lora"
+from datetime import datetime
+folder_name = datetime.today().strftime('%Y%m%d')
+output_dir=f"./output/qwen3_lora/{folder_name}"
 # 配置训练参数
 train_args = TrainingArguments(
     output_dir=output_dir,
