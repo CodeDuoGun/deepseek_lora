@@ -9,7 +9,7 @@ from collections import defaultdict
 from utils.time_str import TimeStr  # 假设你将 TimeStr 保存为 utils/time_str.py
 time_str_gen = TimeStr()  # 初始化时间戳工具
 
-from tiaosheng_new.utils.mask_val_tiaosheng import load_model, predict_single_image
+from face_tongue.utils.mask_val import load_model, predict_single_image
 
 def load_mask_from_memory(buffer):
     if isinstance(buffer, torch.Tensor):

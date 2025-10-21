@@ -1,0 +1,4 @@
+0,tongue_up
+1,face
+2,other
+3,tongue_down

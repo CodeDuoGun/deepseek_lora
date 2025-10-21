@@ -143,14 +143,14 @@ if __name__ == "__main__":
 # criterion = LabelSmoothing(smoothing= 0.05)
     parser = argparse.ArgumentParser(description='Training')
     parser.add_argument('--gpu_ids', default='0', type=str, help='gpu_ids: e.g. 0  0,1,2  0,2')
-    parser.add_argument('--name', default='pelee_2_6_a', type=str, help='FaceBox_s pelee')
-    parser.add_argument('--data_dir', default=r"G:\txd\teain_new_0622", type=str, help='training dir path')
+    parser.add_argument('--name', default='mobilenet_m', type=str, help='FaceBox_s pelee')
+    parser.add_argument('--data_dir', default=r"face_tongue_imgs", type=str, help='training dir path')
     parser.add_argument('--train_all', action='store_true', help='use all training data')
     parser.add_argument('--color_jitter', action='store_true', help='use color jitter in training')
     parser.add_argument('--batchsize', default=128, type=int, help='batchsize')
     parser.add_argument('--erasing_p', default=0, type=float, help='Random Erasing probability, in [0,1]')
     parser.add_argument('--use_dense', action='store_true', help='use densenet')
-    parser.add_argument('--num_classes', type=int, default=3, help='')
+    parser.add_argument('--num_classes', type=int, default=4, help='')
     opt = parser.parse_args()
 
     data_dir = opt.data_dir
@@ -167,7 +167,6 @@ if __name__ == "__main__":
     use_gpu = torch.cuda.is_available()
 
     weights=""
-    name = "mobilenet_m"
     if name=="pelee_2_6_a":
         model = ft_net(opt.num_classes)
         # model=PeleeNet_cls(num_classes=opt.num_classes,drop_rate=0.3
@@ -192,6 +191,7 @@ if __name__ == "__main__":
                 new_state_dict[tmp_name] = v
             model.load_state_dict(new_state_dict, strict=False)
     model=model.cuda()
+    # 对参数分组 ，指定不同学习率， 但是这里看起来逻辑错误
     ignored_params = list(map(id, model.parameters()))
     base_params = filter(lambda p: id(p) not in ignored_params, model.parameters())
     lr=0.1
@@ -217,7 +217,6 @@ if __name__ == "__main__":
             model.load_state_dict(new_state_dict,strict=False)
 
         lr=0.01
-
 
     optimizer_ft = AdaBelief([
         {'params': base_params, 'lr': lr},

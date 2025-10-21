@@ -14,17 +14,17 @@ from typing import List
 import cv2
 from collections import OrderedDict
 # from app.utils.tool import perf_counter_timer
-from tiaosheng_new.utils.model import ft_net  # 确保 model.py 在项目路径中
+from face_tongue.utils.model import ft_net  # 确保 model.py 在项目路径中
 import os
 import cv2
-from tiaosheng_new.mobilenet.mobilenetv4 import MobileNetV4
+from mobilenet.mobilenetv4 import MobileNetV4
 
 class Cls_Up_Class():
-    def __init__(self, model_path,model_name="mv4", device="cuda:0"):
+    def __init__(self, model_path,model_name="mv4", device="cuda:0", num_classes=4):
         if model_name=="mv4":
-            self.model = self.load_mobile_net(model_path, num_classes=2).to(device)  # YOLO‑12 检测 + 跟踪
+            self.model = self.load_mobile_net(model_path, num_classes=num_classes).to(device)  # YOLO‑12 检测 + 跟踪
         else:
-            self.model = self.load_model(model_path, num_classes=2).to(device)  # YOLO‑12 检测 + 跟踪
+            self.model = self.load_model(model_path, num_classes=num_classes).to(device)  # YOLO‑12 检测 + 跟踪
 
         self.last_log_time = time.time()
         self.frame_counter = 0
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     root_dir = r"/data/data_jump/txd/train_data/0731_train/test/20250528153244686_rope_chart/0"
     pred_count = {0: 0, 1: 0}
 
-    to_dump = True
+    to_dump = False
     imgs=glob.glob(os.path.join(root_dir, "*.jpg"))
 
     for img_path in imgs:
