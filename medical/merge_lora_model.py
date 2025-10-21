@@ -1,8 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
-
-
 def merge_model():
     base_model_name = "Qwen3-8B"  # 原始模型名
     lora_path = "medical/output/qwen3_lora"  # LoRA adapter 输出路径

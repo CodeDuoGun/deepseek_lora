@@ -1,13 +1,3 @@
-"""
-deepseek微调思路整理(自己的代码)
-1、加载模型+分词器
-2、处理数据集
-3、设置lora参数
-4、设置训练参数
-5、设置SwanLab可视化工具
-6、设置训练器参数+训练
-7、保存模型
-"""
 import numpy as np
 with_metric = False
 if with_metric:  
@@ -94,15 +84,9 @@ def process_data(data, tokenizer, max_seq_length):
 def load_alpaca_dataset(file_path):
     with open(file_path, 'r') as f:
         data = json.load(f)
-    # 过滤为空的
     data = list(filter(None, data))
     print(type(data), len(data), data[0])
-    # import pdb
-    # pdb.set_trace()
-    return  DatasetDict({
-        "train": Dataset.from_list(data)
-    })
-    # return Dataset.from_list(data)
+    return Dataset.from_list(data)
 
     
 dataset = load_alpaca_dataset(data_path)
