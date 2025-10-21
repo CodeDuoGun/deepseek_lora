@@ -175,8 +175,7 @@ output/*
 swanlog/*
 
 logs/*
-medical/output/*
-medical/sft_data/*
-.DS_Store*
-Qwen3-8B/*
+.DS_Store/
+.vscode/
 medical/.DS_Store
+Qwen3-8B
