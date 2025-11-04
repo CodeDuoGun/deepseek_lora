@@ -179,3 +179,5 @@ logs/*
 .vscode/
 medical/.DS_Store
 Qwen3-8B
+
+data/face_tongue_train_data/

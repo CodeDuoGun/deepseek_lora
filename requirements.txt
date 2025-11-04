@@ -11,3 +11,4 @@ loguru
 bitsandbytes
 python-dotenv
 openai
+addict
