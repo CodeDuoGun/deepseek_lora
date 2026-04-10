@@ -43,11 +43,3 @@
   "constitution": ["平和质", "气血充足，阴阳协调，为健康体质。"]
 }
 """
-
-# 6个下拉按钮，一个文字描述（该病人的中医诊断描述）
-tongue_color_options = ["淡红", "淡白", "红", "绛", "紫"]
-tongue_shape_options = ["正常", "胖大", "瘦小", "裂纹", "齿痕"]
-coating_color_options = ["白", "黄", "灰黑"]
-coating_quality_options = ["薄", "厚", "腻", "干", "剥"]
-vein_condition_options = ["正常", "轻度瘀滞", "明显瘀滞", "曲张紫暗"]
-constitution_options = ["平和", "气虚", "血瘀", "湿热", "阴虚", "阳虚", "气郁", "痰湿"]
